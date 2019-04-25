@@ -9,6 +9,7 @@ var fs = require("fs");
 var command = process.argv[2];
 var searchItem = process.argv.slice(3).join(" ");
 
+
 switch (command) {
     case "concert-this":
         concert();
@@ -24,12 +25,17 @@ switch (command) {
         break;
 }
 
+
 function concert() {
     axios.get("https://rest.bandsintown.com/artists/" + searchItem + "/events?app_id=codingbootcamp")
         .then(function (response) {
-            for (var i = 0; i < response.length; i++) {
+            for (var i = 0; i < response.data.length; i++) {
                 // print name of venue, location, and date of event MM/DD/YYYY
-                console.log(response[i].data.venue);
+                console.log("=========================")
+                console.log("Venue: " + response.data[i].venue.name);
+                console.log("City: " + response.data[i].venue.city);
+                console.log("Date: " + moment(response.data[i].datetime).format("MM/DD/YYYY"));
+                console.log("=========================")
             }
         });
 }
@@ -45,11 +51,32 @@ function spotSong() {
             if (err) {
                 return console.log(err);
             }
-            // print artist, song name, preview link, album
-            console.log(data);
-        });
 
-        // if no song, default to Ace of Base - The Sign
+            if (data) {
+                // print artist (artists), song name (name), preview link, album
+                console.log("=====================");
+                console.log("Artist: " + data.tracks.items[0].artists[0].name);
+                console.log("Song Title: " + data.tracks.items[0].name);
+                console.log("Preview Link: " + data.tracks.items[0].preview_url);
+                console.log("Album: " + data.tracks.items[0].album.name);
+                console.log("=====================");
+            } else {
+                // if no song, default to Ace of Base - The Sign; code not working
+                spotify.search(
+                    {
+                        type: "track",
+                        query: "The Sign"
+                    }, function (err, data) {
+
+                        console.log("=====================");
+                        console.log("Artist: " + data.tracks.items[0].artists[0].name);
+                        console.log("Song Title: " + data.tracks.items[0].name);
+                        console.log("Preview Link: " + data.tracks.items[0].preview_url);
+                        console.log("Album: " + data.tracks.items[0].album.name);
+                        console.log("=====================");
+                    });
+            }
+        });
 }
 
 function movie() {
@@ -57,7 +84,7 @@ function movie() {
     var queryURL = "http://www.omdbapi.com/?apikey=trilogy&t=" + movieName;
 
     axios.get(queryURL).then(
-        function(response) {
+        function (response) {
             console.log("Title: " + response.data.Title);
             console.log("Year: " + response.data.Year);
             console.log("IMDB Rating: " + response.data.imdbRating);
@@ -73,11 +100,12 @@ function movie() {
 
 function doFile() {
     // use text inside random.txt file to call command
-    fs.readFile("random.txt", "utf8", function(error, data) {
+    fs.readFile("random.txt", "utf8", function (error, data) {
         if (error) {
             return console.log(error);
         }
-        // rewrite data so command line can accept
-        // run spotify function with data
+        var dataArr = data.split(",");
+        console.log(dataArr);
+        // run appropriate function
     });
 }
